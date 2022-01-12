@@ -54,7 +54,7 @@ export class AppComponent implements OnInit {
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(75, this.aspectRatio, 0.1, 100);
-    this.camera.position.z = 2;
+    this.camera.position.z = 7;
 
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas.nativeElement });
     this.orbitCtrl = new OrbitControls(this.camera, this.renderer.domElement);
@@ -62,6 +62,7 @@ export class AppComponent implements OnInit {
 
     this.setRendererSize();
 
+    this.createDonuts();
     // this.addAxesHelper();
 
     this.tick();
@@ -95,5 +96,33 @@ export class AppComponent implements OnInit {
 
       this.scene.add(text);
     });
+  }
+
+  private createDonuts(): void {
+    const matcapTexture = this.textureLoader.load('/assets/textures/awesome-matcap.png');
+    const donutGeometry = new THREE.TorusBufferGeometry(0.3, 0.2, 16, 32);
+    const donutMaterial = new THREE.MeshMatcapMaterial({ matcap: matcapTexture });
+
+    for (let i = 0; i < 150; i++) {
+      this.scene.add(
+        this.createSingleDonut(donutGeometry, donutMaterial)
+      );
+    }
+  }
+
+  private createSingleDonut(geometry: THREE.TorusBufferGeometry, material: THREE.MeshMatcapMaterial): THREE.Mesh {
+    const donutMesh = new THREE.Mesh(geometry, material);
+
+    donutMesh.position.x = (Math.random() - 0.5) * 10;
+    donutMesh.position.y = (Math.random() - 0.5) * 10;
+    donutMesh.position.z = (Math.random() - 0.5) * 10;
+    
+    donutMesh.rotation.x = Math.random() * Math.PI;
+    donutMesh.rotation.y = Math.random() * Math.PI;
+
+    const scale = Math.random();
+    donutMesh.scale.set(scale, scale, scale);
+
+    return donutMesh;
   }
 }
