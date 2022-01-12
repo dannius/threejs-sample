@@ -1,5 +1,6 @@
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import * as THREE from 'three';
+import gsap from 'gsap';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
@@ -53,8 +54,11 @@ export class AppComponent implements OnInit {
     this.setupFont();
     this.scene = new THREE.Scene();
 
-    this.camera = new THREE.PerspectiveCamera(75, this.aspectRatio, 0.1, 100);
-    this.camera.position.z = 7;
+    this.camera = new THREE.PerspectiveCamera(75, this.aspectRatio, 1, 100);
+    this.camera.position.z = 50;
+
+    this.camera.position.x = -30;
+    this.camera.position.y = 30;
 
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas.nativeElement });
     this.orbitCtrl = new OrbitControls(this.camera, this.renderer.domElement);
@@ -64,6 +68,8 @@ export class AppComponent implements OnInit {
 
     this.createDonuts();
     // this.addAxesHelper();
+
+    gsap.to(this.camera.position, { x: 0, y: 1, z: 4, duration: 1.5 })
 
     this.tick();
   }
@@ -88,7 +94,7 @@ export class AppComponent implements OnInit {
       const parameters = { font, size: 0.5, height: 0.2, curveSegments: 5, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.02, bevaleOffset: 0, bevelSegments: 4 };
       const textGeomatry = new TextGeometry('Hello world', parameters);
 
-      const matcapTexture = this.textureLoader.load('/assets/textures/awesome-matcap.png');
+      const matcapTexture = this.textureLoader.load('/assets/textures/tube-material.png');
 
       const textMaterial = new THREE.MeshMatcapMaterial({ matcap: matcapTexture });
       const text = new THREE.Mesh(textGeomatry, textMaterial);
@@ -99,11 +105,11 @@ export class AppComponent implements OnInit {
   }
 
   private createDonuts(): void {
-    const matcapTexture = this.textureLoader.load('/assets/textures/awesome-matcap.png');
+    const matcapTexture = this.textureLoader.load('/assets/textures/tube-material.png');
     const donutGeometry = new THREE.TorusBufferGeometry(0.3, 0.2, 16, 32);
     const donutMaterial = new THREE.MeshMatcapMaterial({ matcap: matcapTexture });
 
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 200; i++) {
       this.scene.add(
         this.createSingleDonut(donutGeometry, donutMaterial)
       );
@@ -113,9 +119,9 @@ export class AppComponent implements OnInit {
   private createSingleDonut(geometry: THREE.TorusBufferGeometry, material: THREE.MeshMatcapMaterial): THREE.Mesh {
     const donutMesh = new THREE.Mesh(geometry, material);
 
-    donutMesh.position.x = (Math.random() - 0.5) * 10;
-    donutMesh.position.y = (Math.random() - 0.5) * 10;
-    donutMesh.position.z = (Math.random() - 0.5) * 10;
+    donutMesh.position.x = (Math.random() - 0.5) * 15;
+    donutMesh.position.y = (Math.random() - 0.5) * 15;
+    donutMesh.position.z = (Math.random() - 0.5) * 15;
     
     donutMesh.rotation.x = Math.random() * Math.PI;
     donutMesh.rotation.y = Math.random() * Math.PI;
