@@ -1,6 +1,8 @@
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
 @Component({
   selector: 'app-root',
@@ -26,6 +28,9 @@ export class AppComponent implements OnInit {
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
 
+  private fontLoader = new FontLoader();
+  private textureLoader = new THREE.TextureLoader();
+
   private size = {
     height: window.innerHeight,
     width: window.innerWidth,
@@ -45,6 +50,7 @@ export class AppComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.setupFont();
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(75, this.aspectRatio, 0.1, 100);
@@ -54,16 +60,9 @@ export class AppComponent implements OnInit {
     this.orbitCtrl = new OrbitControls(this.camera, this.renderer.domElement);
     this.orbitCtrl.enableDamping = true;
 
-    const mesh = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(1, 1, 1),
-      new THREE.MeshBasicMaterial(),
-    );
-
-
-    this.scene.add(this.camera, mesh);
-
-
     this.setRendererSize();
+
+    // this.addAxesHelper();
 
     this.tick();
   }
@@ -76,5 +75,25 @@ export class AppComponent implements OnInit {
   private setCameraAspect(): void {
     this.camera.aspect = this.aspectRatio;
     this.camera.updateProjectionMatrix();
+  }
+
+  private addAxesHelper(): void {
+    const axisHelper = new THREE.AxesHelper();
+    this.scene.add(axisHelper);
+  }
+
+  private setupFont(): void {
+    this.fontLoader.load('assets/helvetiker_regular.typeface.json', (font: Font) => {
+      const parameters = { font, size: 0.5, height: 0.2, curveSegments: 5, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.02, bevaleOffset: 0, bevelSegments: 4 };
+      const textGeomatry = new TextGeometry('Hello world', parameters);
+
+      const matcapTexture = this.textureLoader.load('/assets/textures/awesome-matcap.png');
+
+      const textMaterial = new THREE.MeshMatcapMaterial({ matcap: matcapTexture });
+      const text = new THREE.Mesh(textGeomatry, textMaterial);
+      textGeomatry.center();
+
+      this.scene.add(text);
+    });
   }
 }
