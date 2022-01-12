@@ -29,17 +29,29 @@ export class AppComponent implements OnInit {
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
 
+  private clock: THREE.Clock;
+
   private fontLoader = new FontLoader();
-  private textureLoader = new THREE.TextureLoader();
+
+  private baseNormalMaterial = new THREE.MeshNormalMaterial();
 
   private size = {
     height: window.innerHeight,
     width: window.innerWidth,
   }
 
+  private shapes: THREE.Mesh[] = [];
+
   private tick = () => {
+    const time = this.clock.getElapsedTime();
+
     this.orbitCtrl.update();
     this.renderer.render(this.scene, this.camera);
+
+    this.shapes.forEach(shape => {
+      const rotationVal = shape.userData.rotationSpeed * time;
+      shape.rotation.set(rotationVal, rotationVal, rotationVal);
+    });
 
     window.requestAnimationFrame(this.tick);
   }
@@ -67,10 +79,14 @@ export class AppComponent implements OnInit {
     this.setRendererSize();
 
     this.createDonuts();
+    this.createCubs();
+
+    this.scene.add(...this.shapes);
     // this.addAxesHelper();
 
     gsap.to(this.camera.position, { x: 0, y: 1, z: 4, duration: 1.5 })
 
+    this.clock = new THREE.Clock();
     this.tick();
   }
 
@@ -94,10 +110,7 @@ export class AppComponent implements OnInit {
       const parameters = { font, size: 0.5, height: 0.2, curveSegments: 5, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.02, bevaleOffset: 0, bevelSegments: 4 };
       const textGeomatry = new TextGeometry('Hello world', parameters);
 
-      const matcapTexture = this.textureLoader.load('/assets/textures/tube-material.png');
-
-      const textMaterial = new THREE.MeshMatcapMaterial({ matcap: matcapTexture });
-      const text = new THREE.Mesh(textGeomatry, textMaterial);
+      const text = new THREE.Mesh(textGeomatry, this.baseNormalMaterial);
       textGeomatry.center();
 
       this.scene.add(text);
@@ -105,30 +118,36 @@ export class AppComponent implements OnInit {
   }
 
   private createDonuts(): void {
-    const matcapTexture = this.textureLoader.load('/assets/textures/tube-material.png');
     const donutGeometry = new THREE.TorusBufferGeometry(0.3, 0.2, 16, 32);
-    const donutMaterial = new THREE.MeshMatcapMaterial({ matcap: matcapTexture });
 
-    for (let i = 0; i < 200; i++) {
-      this.scene.add(
-        this.createSingleDonut(donutGeometry, donutMaterial)
-      );
+    for (let i = 0; i < 100; i++) {
+      this.shapes.push(this.createShape(donutGeometry, this.baseNormalMaterial));
     }
   }
 
-  private createSingleDonut(geometry: THREE.TorusBufferGeometry, material: THREE.MeshMatcapMaterial): THREE.Mesh {
-    const donutMesh = new THREE.Mesh(geometry, material);
+  private createCubs(): void {
+    const cubeGeometry = new THREE.BoxBufferGeometry(0.4, 0.4, 0.4);
 
-    donutMesh.position.x = (Math.random() - 0.5) * 15;
-    donutMesh.position.y = (Math.random() - 0.5) * 15;
-    donutMesh.position.z = (Math.random() - 0.5) * 15;
+    for (let i = 0; i < 100; i++) {
+      this.shapes.push(this.createShape(cubeGeometry, this.baseNormalMaterial));
+    }
+  }
+
+  private createShape(geometry: THREE.BoxBufferGeometry | THREE.TorusBufferGeometry, material: THREE.MeshNormalMaterial): THREE.Mesh {
+    const shape = new THREE.Mesh(geometry, material);
+
+    shape.position.x = (Math.random() - 0.5) * 15;
+    shape.position.y = (Math.random() - 0.5) * 15;
+    shape.position.z = (Math.random() - 0.5) * 15;
     
-    donutMesh.rotation.x = Math.random() * Math.PI;
-    donutMesh.rotation.y = Math.random() * Math.PI;
+    shape.rotation.x = Math.random() * Math.PI;
+    shape.rotation.y = Math.random() * Math.PI;
 
     const scale = Math.random();
-    donutMesh.scale.set(scale, scale, scale);
+    shape.scale.set(scale, scale, scale);
 
-    return donutMesh;
+    shape.userData.rotationSpeed = Math.random() * 1;
+
+    return shape;
   }
 }
