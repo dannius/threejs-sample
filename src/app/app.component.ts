@@ -63,7 +63,10 @@ export class AppComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.setupFont();
+    const paramText = new URLSearchParams(window.location.search).get('value') || 'Hello world';
+
+    this.setupFont(paramText);
+
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(75, this.aspectRatio, 1, 100);
@@ -105,10 +108,10 @@ export class AppComponent implements OnInit {
     this.scene.add(axisHelper);
   }
 
-  private setupFont(): void {
-    this.fontLoader.load('assets/helvetiker_regular.typeface.json', (font: Font) => {
+  private setupFont(textValue: string): void {
+    this.fontLoader.load('assets/IBM-Plex-Sans_Regular.json', (font: Font) => {
       const parameters = { font, size: 0.5, height: 0.2, curveSegments: 5, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.02, bevaleOffset: 0, bevelSegments: 4 };
-      const textGeomatry = new TextGeometry('Hello world', parameters);
+      const textGeomatry = new TextGeometry(textValue, parameters);
 
       const text = new THREE.Mesh(textGeomatry, this.baseNormalMaterial);
       textGeomatry.center();
